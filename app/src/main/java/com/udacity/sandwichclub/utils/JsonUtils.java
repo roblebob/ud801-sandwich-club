@@ -1,5 +1,7 @@
 package com.udacity.sandwichclub.utils;
 
+import android.util.Log;
+
 import java.util.List;
 import java.util.LinkedList;
 import java.util.ListIterator;
@@ -101,7 +103,8 @@ public class JsonUtils {
                 String[] _pair = _curr  .substring(1, _curr.length() - 2)   .split("\":\\[\"" , 2);
                 integrate(sandwich, _pair[0], new LinkedList<String>(Arrays.asList(_pair[1].split("\",\""))));
 
-            } else System.out.println("Error@integrateInto:  " + _curr );
+            } else Log.d("JsonUtil->integrateInto",
+                    "ERROR: value type neither String nor List<String>:  " + _curr );
         }
         return sandwich;
     }
@@ -120,14 +123,14 @@ public class JsonUtils {
             case "placeOfOrigin": { sandwich.setPlaceOfOrigin(value); break; }
             case "description": { sandwich.setDescription(value); break; }
             case "image": { sandwich.setImage(value); break; }
-            default: System.out.println("Error@integrate(1):  " + name + "  cannot be identified"); break;
+            default: { Log.d("JsonUtil->integrate", "ERROR:  " + name ); break; }
         }
     }
     private static void integrate(Sandwich sandwich, String name, List<String> value ) {
         switch (name) {
             case "alsoKnownAs": { sandwich.setAlsoKnownAs(value); break; }
             case "ingredients": { sandwich.setIngredients(value); break; }
-            default: System.out.println("Error@integrate(2):  " + name + "  cannot be identified"); break;
+            default: { Log.d("JsonUtil->integrate", "ERROR:  " + name ); break; }
         }
     }
 
