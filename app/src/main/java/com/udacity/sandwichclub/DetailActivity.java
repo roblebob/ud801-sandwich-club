@@ -2,13 +2,18 @@ package com.udacity.sandwichclub;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 import com.udacity.sandwichclub.model.Sandwich;
 import com.udacity.sandwichclub.utils.JsonUtils;
+
+import java.util.List;
 
 public class DetailActivity extends AppCompatActivity {
 
@@ -56,7 +61,38 @@ public class DetailActivity extends AppCompatActivity {
         Toast.makeText(this, R.string.detail_error_message, Toast.LENGTH_SHORT).show();
     }
 
-    private void populateUI() {
+    private void populateUI(Sandwich sandwich) {
 
+        int[] IDs = {R.id.also_known_tv, R.id.origin_tv, R.id.ingredients_tv, R.id.description_tv};
+        for (int id: IDs) {
+            String string = accessSandwichById(id, sandwich);
+            if (!string.equals(""))
+                ((TextView) findViewById(id)).setText(string);
+            else
+                ((LinearLayout) findViewById(id).getParent()) .getLayoutParams().height = 0;
+        }
+    }
+
+    @NonNull
+    private String accessSandwichById(int id, Sandwich sandwich) {
+
+        switch (id) {
+            case R.id.also_known_tv:
+                return (sandwich.getAlsoKnownAs() != null) ? interp(sandwich.getAlsoKnownAs()) : "";
+            case R.id.origin_tv:
+                return (sandwich.getPlaceOfOrigin() != null) ? sandwich.getPlaceOfOrigin() : "";
+            case R.id.ingredients_tv:
+                return (sandwich.getIngredients() != null) ? interp(sandwich.getIngredients()) : "";
+            case R.id.description_tv:
+                return (sandwich.getDescription() != null) ? sandwich.getDescription() : "";
+            default:
+                return "";
+        }
+    }
+
+    @NonNull
+    private String interp(List<String> strings) {
+        String string = strings.toString();
+        return string.substring(1, string.length() - 1);
     }
 }
