@@ -23,31 +23,34 @@ public class JsonUtils {
     }
 
     /**
-     * Removes all whitespaces "\s", which includes tabs "\t", newlines "\n", .... from the json string.
-     * It also removes the all-enclosing-curly-brackets, signature of the main json object's specific syntax
+     * Removes all whitespaces "\s", which includes tabs"\t", newlines"\n", from the json string.
+     * It also removes the all-enclosing-curly-brackets combined with the flattening of the
+     * sub object"name" into the main object, meaning that its attributes are now part of the main.
+     * (mainName, alsoKnownAs)
      *
      * @param json : String
      * @return  : String
      */
     private static String cleanup(String json) {
         return json
-                .replaceAll("\\s*\\{\\s*", "")
+                .replaceAll("\\s*\\{\\s*\"name\"\\s*:\\s*\\{", "")
                 .replaceAll("\\s*\\}\\s*", "")
                 .replaceAll("\"\\s*:\\s*\"", "\":\"")
                 .replaceAll("\"\\s*:\\s*\\[\\s*", "\":\\[")
                 .replaceAll("\"\\s*,\\s*\"", "\",\"")
-                .replaceAll("\\s*\\]\\s*,\\s*\"", "\\],\"")
-                .replaceAll("\\s*\\]\\s*", "\\]");
+                .replaceAll("\\s*\\]\\s*", "\\]")
+                .replaceAll("\\\\\"", "\"")
+                ;
     }
 
     /**
-     * Performing splitting at every comma ","  gives rise to 3 x distinct cases (1 x true, 2 x false/positives).
-     * (1:true)  INTER (splits) -- separates individual NAME/VALUE-pairs from each other.
-     * (2:false)  INTRA (splits) <<<< commas used in an array of Strings constituting one possible VALUE instance
-     * (3:false)  ATOMIC (splits) <<<< commas within a single String constituting the other possible VALUE instance
-     *
-     *  Note: The strings defining the sandwich fieldnames are known and do not contain any commas (see Sandwich.java)
-     *      Therefore there are no ATOMIC splits within the NAME definition part.
+     * Performing splitting at every comma ","
+     * gives rise to 3 x distinct cases (1 x true, 2 x false/positives).
+     * (1:true)   commas separating individual NAME/VALUE-pairs from each other.
+     * (2:false)  commas used in an array of Strings constituting one possible VALUE instance
+     * (3:false)  commas within a single String constituting the other possible VALUE instance
+     * Note: The strings defining the sandwich fieldnames are known and do not contain any commas.
+     * The task is now to undo the false/positives
      *
      * @param json : String
      * @return list : List<String>
@@ -60,17 +63,17 @@ public class JsonUtils {
         while (iter.hasNext()) {
 
             /* Getting into position */
-            String _last = iter.next();
+            String last = iter.next();
             if (!iter.hasNext()) break;
-            String _curr = iter.next();
+            String curr = iter.next();
             iter.previous();
 
-            boolean cond = _curr.contains("\":\"") || _curr.contains("\":[\"");
+            boolean cond = curr.contains("\":\"") || curr.contains("\":[");
             if (!cond) /* Equivalent case identifying the false/positives */ {
 
                 iter.remove();
                 iter.previous();
-                iter.set(_last + "," + _curr);
+                iter.set(last + "," + curr);
             }
         }
         return list;
@@ -90,21 +93,21 @@ public class JsonUtils {
         ListIterator iter = list.listIterator();
         while (list.size() > 0) {
 
-            String _curr = iter.next().toString();
+            String curr = iter.next().toString();
             iter.remove();
 
-            if (_curr.matches("\"\\w*\":\".*\"")) /* case: value type is a single string */{
+            if (curr.matches("\"\\w*\":\".*\"")) /* case: value type is a single string */{
 
-                String[] _pair = _curr  .substring(1, _curr.length() - 1)   .split("\":\"", 2);
+                String[] _pair = curr  .substring(1, curr.length() - 1)   .split("\":\"", 2);
                 integrate(sandwich, _pair[0], _pair[1]);
 
-            } else if (_curr.matches("\"\\w*\":\\[\".*\"\\]")) /* case: value type is a string array */{
+            } else if (curr.matches("\"\\w*\":\\[\".*\"\\]")) /* case: value type is a string array */{
 
-                String[] _pair = _curr  .substring(1, _curr.length() - 2)   .split("\":\\[\"" , 2);
+                String[] _pair = curr  .substring(1, curr.length() - 2)   .split("\":\\[\"" , 2);
                 integrate(sandwich, _pair[0], new LinkedList<String>(Arrays.asList(_pair[1].split("\",\""))));
 
-            } else Log.d("JsonUtil->integrateInto",
-                    "ERROR: value type neither String nor List<String>:  " + _curr );
+            } else Log.d("JsonUtil::integrateInto   ",
+                    "ERROR: value type neither String nor List<String>:  " + curr );
         }
         return sandwich;
     }
@@ -133,37 +136,4 @@ public class JsonUtils {
             default: { Log.d("JsonUtil->integrate", "ERROR:  " + name ); break; }
         }
     }
-
-    /**
-     *
-     * @return
-     */
-    public static boolean runTest() {
-
-        final String TEST_STRING =  "    {" + "\n" +
-                "\"mainName\" : "       + "\"Manhattan0816\""                                           + " , " + "\n" + "\t" +
-                "\"alsoKnownAs\" : "    + "[ \"Manhatten0815+\", \"N.Y.Buster\", \"ManhattatorXtra\"  ]" + " , " + "\n" +
-                "\"placeOfOrigin\" : "  + "\"Dresden, Saxony, Germany\""                                         + " , " + "\n" +
-                "\"description\" : "    + "\"Meatballs made from plant, with BBQ-saurce, Cheddar, ... .\""  + " , " + "\n" +
-                "\"image\" : "          + "\"\""                                                        + " , " + "\n" +
-                "\"ingredients\" : "    + "[    \"Baguette, 50cm\" ,   \"sliced VeggieBurgers\" , \"Onions\"  ]" + "\n" + "}           ";
-
-        final Sandwich TEST_SANDWICH =  new Sandwich("Manhattan0816",
-                new LinkedList<String>(Arrays.asList("Manhatten0815+", "N.Y.Buster", "ManhattatorXtra")),
-                "Dresden, Saxony, Germany",
-                "Meatballs made from plant, with BBQ-saurce, Cheddar, ... .",
-                "",
-                new LinkedList<String>(Arrays.asList("Baguette, 50cm", "sliced VeggieBurgers", "Onions"))
-        );
-
-        final Sandwich sandwich =  JsonUtils.parseSandwichJson(TEST_STRING);
-
-        return sandwich.getMainName().equals(TEST_SANDWICH.getMainName()) &&
-                sandwich.getAlsoKnownAs().equals(TEST_SANDWICH.getAlsoKnownAs()) &&
-                sandwich.getPlaceOfOrigin().equals(TEST_SANDWICH.getPlaceOfOrigin()) &&
-                sandwich.getDescription().equals(TEST_SANDWICH.getDescription()) &&
-                sandwich.getImage().equals(TEST_SANDWICH.getImage()) &&
-                sandwich.getIngredients().equals(TEST_SANDWICH.getIngredients());
-    }
 }
-
