@@ -61,11 +61,17 @@ public class DetailActivity extends AppCompatActivity {
         Toast.makeText(this, R.string.detail_error_message, Toast.LENGTH_SHORT).show();
     }
 
-    private void populateUI(Sandwich sandwich) {
+    /**
+     * Populates the UI's individual items corresponding to the given attributes of the sandwich,
+     * ( Note: the response of an empty String is collapsing its attribute's view !!! )
+     *
+     * @param sandwich is the Sandwich given
+     */
+    private void populateUI(@NonNull Sandwich sandwich) {
 
         int[] IDs = {R.id.also_known_tv, R.id.origin_tv, R.id.ingredients_tv, R.id.description_tv};
         for (int id: IDs) {
-            String string = accessSandwichById(id, sandwich);
+            String string = accessSandwichById(sandwich, id);
             if (!string.equals(""))
                 ((TextView) findViewById(id)).setText(string);
             else
@@ -73,8 +79,14 @@ public class DetailActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Allows you to access attributes of a given Sandwich via its corresponding UI item's id.
+     *
+     * @param sandwich is the Sandwich given
+     * @param id refers to the UI item dedicated to display the particular Sandwich attribute
+     */
     @NonNull
-    private String accessSandwichById(int id, Sandwich sandwich) {
+    private String accessSandwichById(Sandwich sandwich, int id) {
 
         switch (id) {
             case R.id.also_known_tv:
@@ -90,6 +102,11 @@ public class DetailActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Interprets a given List of Strings to a single String ready to be displayed
+     *
+     * @param strings is the List of Strings to be converted
+     */
     @NonNull
     private String interp(List<String> strings) {
         String string = strings.toString();
