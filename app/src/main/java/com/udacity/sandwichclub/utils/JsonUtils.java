@@ -1,5 +1,6 @@
 package com.udacity.sandwichclub.utils;
 
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import java.util.List;
@@ -10,6 +11,7 @@ import java.util.Arrays;
 import com.udacity.sandwichclub.model.Sandwich;
 
 public class JsonUtils {
+    private static final String TAG = JsonUtils.class.getSimpleName();
 
     /**
      * Parses a sandwich-specific json string into a Sandwich instance, by
@@ -18,7 +20,7 @@ public class JsonUtils {
      * @param json : String
      * @return sandwich : Sandwich
      */
-    public static Sandwich parseSandwichJson(String json) {
+    public static Sandwich parseSandwichJson(@NonNull String json) {
         return integrateInto(new Sandwich(), intoListOfAttributesStrings(cleanup(json)));
     }
 
@@ -31,7 +33,8 @@ public class JsonUtils {
      * @param json : String
      * @return  : String
      */
-    private static String cleanup(String json) {
+    @NonNull
+    private static String cleanup(@NonNull String json) {
         return json
                 .replaceAll("\\s*\\{\\s*\"name\"\\s*:\\s*\\{", "")
                 .replaceAll("\\s*\\}\\s*", "")
@@ -55,7 +58,7 @@ public class JsonUtils {
      * @param json : String
      * @return list : List<String>
      */
-    private static List<String> intoListOfAttributesStrings(String json) {
+    private static List<String> intoListOfAttributesStrings(@NonNull String json) {
 
         List<String> list =  new LinkedList<>(Arrays.asList(json.split(",")));
 
@@ -88,7 +91,8 @@ public class JsonUtils {
      *              as to say a single attributes)
      * @return sandwich
      */
-    private static Sandwich integrateInto(Sandwich sandwich, List<String> list) {
+    @org.jetbrains.annotations.Contract("_, _ -> param1")
+    private static Sandwich integrateInto(Sandwich sandwich, @NonNull List<String> list) {
 
         ListIterator iter = list.listIterator();
         while (list.size() > 0) {
@@ -104,10 +108,9 @@ public class JsonUtils {
             } else if (curr.matches("\"\\w*\":\\[\".*\"\\]")) /* case: value type is a string array */{
 
                 String[] _pair = curr  .substring(1, curr.length() - 2)   .split("\":\\[\"" , 2);
-                integrate(sandwich, _pair[0], new LinkedList<String>(Arrays.asList(_pair[1].split("\",\""))));
+                integrate(sandwich, _pair[0], new LinkedList<>(Arrays.asList(_pair[1].split("\",\""))));
 
-            } else Log.d("JsonUtil::integrateInto   ",
-                    "ERROR: value type neither String nor List<String>:  " + curr );
+            } else Log.d(TAG, "ERROR in integrateInto(): value type neither String nor List<String>:  " + curr );
         }
         return sandwich;
     }
@@ -120,20 +123,20 @@ public class JsonUtils {
      * @param name  (the name-part of the NAME/VALUE pair)
      * @param value  (the value-part of the NAME/VALUE pair)
      */
-    private static void integrate(Sandwich sandwich, String name, String value ) {
+    private static void integrate(Sandwich sandwich, @NonNull String name, String value ) {
         switch (name) {
             case "mainName": { sandwich.setMainName(value); break; }
             case "placeOfOrigin": { sandwich.setPlaceOfOrigin(value); break; }
             case "description": { sandwich.setDescription(value); break; }
             case "image": { sandwich.setImage(value); break; }
-            default: { Log.d("JsonUtil->integrate", "ERROR:  " + name ); break; }
+            default: { Log.d(TAG, "ERROR in integerate():  " + name ); break; }
         }
     }
-    private static void integrate(Sandwich sandwich, String name, List<String> value ) {
+    private static void integrate(Sandwich sandwich, @NonNull String name, List<String> value ) {
         switch (name) {
             case "alsoKnownAs": { sandwich.setAlsoKnownAs(value); break; }
             case "ingredients": { sandwich.setIngredients(value); break; }
-            default: { Log.d("JsonUtil->integrate", "ERROR:  " + name ); break; }
+            default: { Log.d(TAG, "ERROR in integrate():  " + name ); break; }
         }
     }
 }

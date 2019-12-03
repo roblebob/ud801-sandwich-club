@@ -84,17 +84,18 @@ public class DetailActivity extends AppCompatActivity {
      *
      * @param sandwich is the Sandwich given
      * @param id refers to the UI item dedicated to display the particular Sandwich attribute
+     * @return : String, being the value part of the attribute targeted
      */
     @NonNull
     private String accessSandwichById(Sandwich sandwich, int id) {
 
         switch (id) {
             case R.id.also_known_tv:
-                return (sandwich.getAlsoKnownAs() != null) ? interp(sandwich.getAlsoKnownAs()) : "";
+                return (sandwich.getAlsoKnownAs() != null) ? interpret(sandwich.getAlsoKnownAs()) : "";
             case R.id.origin_tv:
                 return (sandwich.getPlaceOfOrigin() != null) ? sandwich.getPlaceOfOrigin() : "";
             case R.id.ingredients_tv:
-                return (sandwich.getIngredients() != null) ? interp(sandwich.getIngredients()) : "";
+                return (sandwich.getIngredients() != null) ? interpret(sandwich.getIngredients()) : "";
             case R.id.description_tv:
                 return (sandwich.getDescription() != null) ? sandwich.getDescription() : "";
             default:
@@ -103,12 +104,13 @@ public class DetailActivity extends AppCompatActivity {
     }
 
     /**
-     * Interprets a given List of Strings to a single String ready to be displayed
+     * Interprets a given List of Strings to a single String
      *
      * @param strings is the List of Strings to be converted
+     * @return : String, ready to be displayed
      */
     @NonNull
-    private String interp(List<String> strings) {
+    private String interpret(List<String> strings) {
         String string = strings.toString();
         return string.substring(1, string.length() - 1);
     }
